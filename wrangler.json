@@ -4,6 +4,5 @@
     "assets": {
         "directory": "./out",
         "binding": "ASSETS"
-    },
-    "main": "src/worker.ts"
+    }
 }
