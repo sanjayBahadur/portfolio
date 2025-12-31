@@ -211,62 +211,80 @@ export default function JourneyGlobe({
     }, []);
 
     // Handler for when globe is ready
+    // Handler for when globe is ready
     const handleGlobeReady = useCallback(() => {
-        console.log("[JourneyGlobe] Globe is ready!");
+        console.log("[JourneyGlobe] Globe is ready! Initializing view...");
         if (globeRef.current) {
+            // Setup controls
             const controls = globeRef.current.controls();
             if (controls) {
                 controls.enableDamping = true;
                 controls.dampingFactor = 0.1;
                 controls.rotateSpeed = 0.5;
-                controls.autoRotate = true;
+                // Start with auto-rotate disabled to ensure position lock
+                controls.autoRotate = false;
                 controls.autoRotateSpeed = 0.5;
             }
+
+            // Immediately set view to first place (Nepal)
+            // We use setTimeout 0 to ensure this runs after any internal initialization
+            setTimeout(() => {
+                if (!globeRef.current) return;
+
+                if (places.length > 0) {
+                    const firstPlace = places[0];
+                    console.log(`[JourneyGlobe] Forcing initial view to ${firstPlace.displayName} (${firstPlace.lat}, ${firstPlace.lng})`);
+
+                    const targetAlt = firstPlace.kind === "us_state" ? 0.7 : 1.5;
+
+                    // Force the point of view immediately
+                    globeRef.current.pointOfView({
+                        lat: firstPlace.lat,
+                        lng: firstPlace.lng,
+                        altitude: targetAlt
+                    }, 0);
+
+                    // Clear any pending move that matches this initial state
+                    // This prevents the useEffect from animating "from" Africa "to" Nepal
+                    if (pendingMoveRef.current) {
+                        const p = pendingMoveRef.current;
+                        // Loose equality check for lat/lng to see if it's the same target
+                        if (Math.abs(p.lat - firstPlace.lat) < 0.1 && Math.abs(p.lng - firstPlace.lng) < 0.1) {
+                            console.log("[JourneyGlobe] Clearing redundant pending move for initial place");
+                            pendingMoveRef.current = null;
+                        }
+                    }
+
+                    // Enable auto-rotate after a delay
+                    if (controls) {
+                        setTimeout(() => {
+                            controls.autoRotate = true;
+                        }, 500);
+                    }
+                }
+            }, 10);
         }
         setIsGlobeReady(true);
     }, []);
 
-    // Initial Selection (First Place - Nepal)
-    useEffect(() => {
-        if (!hasInitialSelected && places.length > 0) {
-            const firstPlace = places[0];
-            onSelect(firstPlace.key);
-            setHasInitialSelected(true);
-        }
-    }, [hasInitialSelected, onSelect]);
+    // Initial Selection logic moved to parent (app/page.tsx) to prevent delay
+    // useEffect(() => {
+    //     if (!hasInitialSelected && places.length > 0) {
+    //         const firstPlace = places[0];
+    //         onSelect(firstPlace.key);
+    //         setHasInitialSelected(true);
+    //     }
+    // }, [hasInitialSelected, onSelect]);
 
     // Handle GPS locate
     const handleLocateMe = useCallback(() => {
         const performLocate = () => {
-            if (!navigator.geolocation) {
-                // Fallback to Florida
-                const fallbackPlace = places.find(p => p.key === "Florida") || places[0];
-                if (fallbackPlace) {
-                    onSelect(fallbackPlace.key);
-                    setToastMessage(`Location unavailable - defaulting to ${fallbackPlace.displayName}`);
-                }
-                return;
+            // Optimization: Skip browser geolocation and default to Florida
+            const fallbackPlace = places.find(p => p.key === "Florida") || places[0];
+            if (fallbackPlace) {
+                onSelect(fallbackPlace.key);
+                setToastMessage(`Current Location - ${fallbackPlace.displayName}`);
             }
-
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const { latitude, longitude } = position.coords;
-                    const nearestPlace = findNearestPlace(latitude, longitude);
-
-                    if (nearestPlace) {
-                        onSelect(nearestPlace.key);
-                    }
-                },
-                () => {
-                    // Geolocation denied/error - fallback to Florida
-                    const fallbackPlace = places.find(p => p.key === "Florida") || places[0];
-                    if (fallbackPlace) {
-                        onSelect(fallbackPlace.key);
-                        setToastMessage(`Location unavailable - defaulting to ${fallbackPlace.displayName}`);
-                    }
-                },
-                { timeout: 5000, enableHighAccuracy: false }
-            );
         };
 
         performLocate();

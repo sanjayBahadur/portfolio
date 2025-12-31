@@ -25,7 +25,7 @@ const JourneyGlobe = dynamic(() => import("@/components/JourneyGlobe"), {
 
 export default function Home() {
     const [hoveredKey, setHoveredKey] = useState<string | null>(null);
-    const [selectedKey, setSelectedKey] = useState<string | null>(null);
+    const [selectedKey, setSelectedKey] = useState<string | null>(places.length > 0 ? places[0].key : null);
 
     // Handle hover on globe regions
     const handleHover = useCallback((key: string | null) => {
@@ -101,12 +101,11 @@ export default function Home() {
                     <div className="max-w-7xl mx-auto">
                         {/* Title */}
                         <div className="text-center mb-8 pt-4">
-                            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 gradient-text glow-text">
-                                My Journey
+                            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 gradient-text glow-text font-mono uppercase tracking-widest">
+                                SANJAY MALLA
                             </h1>
                             <p className="text-matrix-green-100/60 text-lg max-w-xl mx-auto">
-                                Explore the places I have visited and the experiences that have
-                                shaped my perspective.
+                                Explore my journey
                             </p>
                         </div>
 
