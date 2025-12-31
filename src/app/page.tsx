@@ -110,7 +110,7 @@ export default function Home() {
                         </div>
 
                         {/* Globe and Card Grid */}
-                        <div className="grid lg:grid-cols-5 gap-6 h-[calc(100vh-280px)] min-h-[500px]">
+                        <div className="grid lg:grid-cols-5 gap-6 h-[calc(100vh-280px)] min-h-[45vh] lg:min-h-[500px]">
                             {/* Globe - takes up more space on larger screens */}
                             <div className="lg:col-span-3 relative rounded-2xl overflow-hidden border border-matrix-green-400/20 bg-matrix-black">
                                 <JourneyGlobe

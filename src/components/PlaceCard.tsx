@@ -44,7 +44,7 @@ export default function PlaceCard({ place, isLocked, onClear, onNext, onPrev }: 
     const glowColor = getGlowColor(place.key);
 
     return (
-        <div className="terminal-panel p-6 h-full flex flex-col animate-fade-in-up">
+        <div className="terminal-panel p-4 md:p-6 h-full flex flex-col animate-fade-in-up">
             {/* Header with lock indicator */}
             <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
@@ -90,7 +90,7 @@ export default function PlaceCard({ place, isLocked, onClear, onNext, onPrev }: 
                         )}
                     </div>
                     <h2
-                        className="text-2xl font-bold glow-text"
+                        className="text-xl md:text-2xl font-bold glow-text"
                         style={{ color: glowColor }}
                     >
                         {place.displayName}

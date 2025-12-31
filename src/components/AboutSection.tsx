@@ -9,7 +9,7 @@ export default function AboutSection() {
     ];
 
     return (
-        <section id="about" className="py-20 px-6">
+        <section id="about" className="py-12 md:py-20 px-6">
             <div className="max-w-5xl mx-auto">
                 {/* Section header */}
                 <div className="text-center mb-12">
@@ -19,7 +19,7 @@ export default function AboutSection() {
                     <div className="w-24 h-1 bg-gradient-to-r from-transparent via-matrix-green-400 to-transparent mx-auto" />
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-8">
+                <div className="grid md:grid-cols-2 gap-6 md:gap-8">
                     {/* Bio */}
                     <div className="terminal-panel p-6">
                         <h3 className="text-lg font-mono text-matrix-green-400 mb-4 flex items-center">

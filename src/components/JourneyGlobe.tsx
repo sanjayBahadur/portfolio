@@ -453,6 +453,8 @@ export default function JourneyGlobe({
                     atmosphereColor="rgba(0, 255, 65, 0.3)"
                     atmosphereAltitude={0.15}
                     onGlobeReady={handleGlobeReady}
+                    // @ts-expect-error - rendererConfig is passed to ThreeJS renderer but missing in types
+                    rendererConfig={{ powerPreference: "high-performance", antialias: true, alpha: true }}
                     // Polygons (countries and states)
                     polygonsData={polygons}
                     polygonCapColor={polygonCapColor}

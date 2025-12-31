@@ -157,10 +157,16 @@ const nameToIso3Map: Record<string, string> = {
     "Saudi Arabia": "SAU",
 };
 
+
+let cachedCountryFeatures: GlobePolygon[] | null = null;
+let cachedStateFeatures: GlobePolygon[] | null = null;
+
 /**
  * Load and convert countries TopoJSON to GeoJSON features
  */
 export function getCountryFeatures(): GlobePolygon[] {
+    if (cachedCountryFeatures) return cachedCountryFeatures;
+
     const visitedKeys = getVisitedKeys();
     const topology = countriesData as unknown as Topology<{
         countries: GeometryCollection<{ name: string }>;
@@ -213,6 +219,7 @@ export function getCountryFeatures(): GlobePolygon[] {
         }
     }
 
+    cachedCountryFeatures = features;
     return features;
 }
 
@@ -220,6 +227,8 @@ export function getCountryFeatures(): GlobePolygon[] {
  * Load and convert US states TopoJSON to GeoJSON features
  */
 export function getStateFeatures(): GlobePolygon[] {
+    if (cachedStateFeatures) return cachedStateFeatures;
+
     const visitedKeys = getVisitedKeys();
     const topology = statesData as unknown as Topology<{
         states: GeometryCollection<{ name: string }>;
@@ -230,7 +239,7 @@ export function getStateFeatures(): GlobePolygon[] {
         topology.objects.states
     ) as FeatureCollection<Geometry, { name: string }>;
 
-    return statesGeoJson.features.map((f) => {
+    const features = statesGeoJson.features.map((f) => {
         const name = f.properties?.name || "";
         const visited = visitedKeys.has(name);
 
@@ -250,6 +259,9 @@ export function getStateFeatures(): GlobePolygon[] {
             },
         };
     });
+
+    cachedStateFeatures = features;
+    return features;
 }
 
 /**
