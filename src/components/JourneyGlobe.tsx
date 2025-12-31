@@ -7,10 +7,13 @@ import {
     getAllPolygons,
     generateParticlePoints,
     generateRingForPlace,
+    getOrderedPlaces,
+    findNearestPlace,
     type GlobePolygon,
     type ParticlePoint,
     type RingData,
 } from "@/lib/geo";
+import { places, type Place } from "@/data/journey";
 import { getGlowColorWithAlpha } from "@/lib/colors";
 import FallbackTimeline from "./FallbackTimeline";
 
@@ -45,7 +48,21 @@ export default function JourneyGlobe({
     const [particles, setParticles] = useState<ParticlePoint[]>([]);
     const [rings, setRings] = useState<RingData[]>([]);
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+    const [isGlobeReady, setIsGlobeReady] = useState(false);
+    const [toastMessage, setToastMessage] = useState<string | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+    const autoFocusTriggered = useRef(false);
+    const [hasInitialSelected, setHasInitialSelected] = useState(false);
+
+    // Polling refs
+    const pendingMoveRef = useRef<{ lat: number; lng: number; altitude: number } | null>(null);
+
+    // Carousel state
+    const orderedPlaces = useMemo(() => getOrderedPlaces(), []);
+    const currentIndex = useMemo(() => {
+        if (!selectedKey) return -1;
+        return orderedPlaces.findIndex((p) => p.key === selectedKey);
+    }, [selectedKey, orderedPlaces]);
 
     // Check WebGL support on mount
     useEffect(() => {
@@ -91,10 +108,14 @@ export default function JourneyGlobe({
     useEffect(() => {
         const updateDimensions = () => {
             if (containerRef.current) {
+                const { offsetWidth, offsetHeight } = containerRef.current;
+                console.log(`[JourneyGlobe] Resize: ${offsetWidth}x${offsetHeight}`);
                 setDimensions({
-                    width: containerRef.current.offsetWidth,
-                    height: containerRef.current.offsetHeight,
+                    width: offsetWidth,
+                    height: offsetHeight,
                 });
+            } else {
+                console.warn("[JourneyGlobe] Container ref is null during resize");
             }
         };
 
@@ -103,23 +124,192 @@ export default function JourneyGlobe({
         return () => window.removeEventListener("resize", updateDimensions);
     }, []);
 
-    // Configure globe on mount
-    useEffect(() => {
-        if (globeRef.current) {
-            // Set initial view
-            globeRef.current.pointOfView({ lat: 30, lng: -40, altitude: 2.2 }, 0);
+    // --- CAMERA CONTROL ---
+    // Move globe camera to selected place
+    const moveToPlace = useCallback((place: Place) => {
+        const targetAlt = place.kind === "us_state" ? 0.7 : 1.5;
+        const target = { lat: place.lat, lng: place.lng, altitude: targetAlt };
 
-            // Auto-rotate slowly
-            const controls = globeRef.current.controls();
-            if (controls) {
-                controls.autoRotate = true;
-                controls.autoRotateSpeed = 0.3;
-                controls.enableZoom = true;
-                controls.minDistance = 150;
-                controls.maxDistance = 500;
+        if (globeRef.current && isGlobeReady) {
+            console.log(`[JourneyGlobe] Moving to ${place.displayName}`);
+            try {
+                // Disable auto-rotate during move
+                const controls = globeRef.current.controls();
+                if (controls) {
+                    controls.autoRotate = false;
+                }
+
+                // Move camera
+                globeRef.current.pointOfView(target, 1500);
+
+                // Re-enable auto-rotate after move
+                setTimeout(() => {
+                    if (globeRef.current) {
+                        const c = globeRef.current.controls();
+                        if (c) c.autoRotate = true;
+                    }
+                }, 1600);
+            } catch (e) {
+                console.error("[JourneyGlobe] Move error:", e);
+            }
+        } else {
+            // Store for later when globe is ready
+            console.log(`[JourneyGlobe] Globe not ready, queuing move to ${place.displayName}`);
+            pendingMoveRef.current = target;
+        }
+    }, [isGlobeReady]);
+
+    // Handle selectedKey changes
+    useEffect(() => {
+        if (!selectedKey) return;
+        const place = places.find(p => p.key === selectedKey);
+        if (place) {
+            moveToPlace(place);
+        }
+    }, [selectedKey, moveToPlace]);
+
+    // Execute pending move when globe becomes ready
+    useEffect(() => {
+        if (isGlobeReady && globeRef.current && pendingMoveRef.current) {
+            console.log("[JourneyGlobe] Globe now ready, executing pending move");
+            try {
+                // Pending move execution
+                if (globeRef.current) {
+                    const controls = globeRef.current.controls();
+                    if (controls) controls.autoRotate = false;
+
+                    globeRef.current.pointOfView(pendingMoveRef.current, 1500);
+
+                    setTimeout(() => {
+                        if (globeRef.current) {
+                            const c = globeRef.current.controls();
+                            if (c) c.autoRotate = true;
+                        }
+                    }, 1600);
+                }
+                pendingMoveRef.current = null;
+            } catch (e) {
+                console.error("[JourneyGlobe] Pending move error:", e);
             }
         }
-    }, [dimensions]);
+    }, [isGlobeReady]);
+
+    // Animation loop to ensure controls are updated (required for damping and autoRotate)
+    useEffect(() => {
+        let frameId: number;
+        const animate = () => {
+            if (globeRef.current) {
+                const controls = globeRef.current.controls();
+                if (controls) {
+                    controls.update();
+                }
+            }
+            frameId = requestAnimationFrame(animate);
+        };
+        animate();
+        return () => cancelAnimationFrame(frameId);
+    }, []);
+
+    // Handler for when globe is ready
+    const handleGlobeReady = useCallback(() => {
+        console.log("[JourneyGlobe] Globe is ready!");
+        if (globeRef.current) {
+            const controls = globeRef.current.controls();
+            if (controls) {
+                controls.enableDamping = true;
+                controls.dampingFactor = 0.1;
+                controls.rotateSpeed = 0.5;
+                controls.autoRotate = true;
+                controls.autoRotateSpeed = 0.5;
+            }
+        }
+        setIsGlobeReady(true);
+    }, []);
+
+    // Initial Selection (First Place - Nepal)
+    useEffect(() => {
+        if (!hasInitialSelected && places.length > 0) {
+            const firstPlace = places[0];
+            onSelect(firstPlace.key);
+            setHasInitialSelected(true);
+        }
+    }, [hasInitialSelected, onSelect]);
+
+    // Handle GPS locate
+    const handleLocateMe = useCallback(() => {
+        const performLocate = () => {
+            if (!navigator.geolocation) {
+                // Fallback to Florida
+                const fallbackPlace = places.find(p => p.key === "Florida") || places[0];
+                if (fallbackPlace) {
+                    onSelect(fallbackPlace.key);
+                    setToastMessage(`Location unavailable - defaulting to ${fallbackPlace.displayName}`);
+                }
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const { latitude, longitude } = position.coords;
+                    const nearestPlace = findNearestPlace(latitude, longitude);
+
+                    if (nearestPlace) {
+                        onSelect(nearestPlace.key);
+                    }
+                },
+                () => {
+                    // Geolocation denied/error - fallback to Florida
+                    const fallbackPlace = places.find(p => p.key === "Florida") || places[0];
+                    if (fallbackPlace) {
+                        onSelect(fallbackPlace.key);
+                        setToastMessage(`Location unavailable - defaulting to ${fallbackPlace.displayName}`);
+                    }
+                },
+                { timeout: 5000, enableHighAccuracy: false }
+            );
+        };
+
+        performLocate();
+    }, [onSelect]);
+
+    // Auto-focus logic removed to prefer initial view of Nepal
+
+    // Toast auto-hide
+    useEffect(() => {
+        if (toastMessage) {
+            const timer = setTimeout(() => setToastMessage(null), 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [toastMessage]);
+
+    // Carousel navigation
+    const handlePrevious = useCallback(() => {
+        if (orderedPlaces.length === 0) return;
+
+        let newIndex: number;
+        if (currentIndex <= 0) {
+            newIndex = orderedPlaces.length - 1;
+        } else {
+            newIndex = currentIndex - 1;
+        }
+
+        const place = orderedPlaces[newIndex];
+        onSelect(place.key);
+    }, [currentIndex, orderedPlaces, onSelect]);
+
+    const handleNext = useCallback(() => {
+        if (orderedPlaces.length === 0) return;
+
+        let newIndex: number;
+        if (currentIndex < 0 || currentIndex >= orderedPlaces.length - 1) {
+            newIndex = 0;
+        } else {
+            newIndex = currentIndex + 1;
+        }
+
+        const place = orderedPlaces[newIndex];
+        onSelect(place.key);
+    }, [currentIndex, orderedPlaces, onSelect]);
 
     // Polygon hover handler
     const handlePolygonHover = useCallback(
@@ -140,45 +330,39 @@ export default function JourneyGlobe({
             const polygon = obj as GlobePolygon | null;
             if (polygon && polygon.properties.__visited) {
                 onSelect(polygon.properties.__key);
-
-                // Fly to the selected region
-                if (globeRef.current) {
-                    const place = polygon.properties;
-                    // Find the place from journey data to get coordinates
-                    import("@/data/journey").then(({ places }) => {
-                        const p = places.find((pl) => pl.key === place.__key);
-                        if (p) {
-                            globeRef.current?.pointOfView(
-                                { lat: p.lat, lng: p.lng, altitude: 1.8 },
-                                1000
-                            );
-                        }
-                    });
-                }
             }
         },
         [onSelect]
     );
 
-    // Memoized polygon styling functions
+    // Memoized polygon styling functions with alternating patterns for adjacent regions
     const polygonCapColor = useCallback(
         (d: object) => {
             const polygon = d as GlobePolygon;
             const key = polygon.properties.__key;
             const isActive = key === selectedKey || key === hoveredKey;
+            const parity = polygon.properties.__hashParity;
 
             if (polygon.properties.__visited) {
+                // Use different alpha based on parity for adjacent region differentiation
+                const baseAlpha = parity ? 0.55 : 0.45;
+                const activeAlpha = parity ? 0.85 : 0.75;
+
                 return isActive
-                    ? getGlowColorWithAlpha(key, 0.8)
-                    : getGlowColorWithAlpha(key, 0.5);
+                    ? getGlowColorWithAlpha(key, activeAlpha)
+                    : getGlowColorWithAlpha(key, baseAlpha);
             }
             return "rgba(15, 25, 15, 0.3)";
         },
         [selectedKey, hoveredKey]
     );
 
-    const polygonSideColor = useCallback(() => {
-        return "rgba(0, 255, 65, 0.1)";
+    const polygonSideColor = useCallback((d: object) => {
+        const polygon = d as GlobePolygon;
+        if (polygon.properties.__visited) {
+            return "rgba(0, 255, 65, 0.2)";
+        }
+        return "rgba(0, 255, 65, 0.05)";
     }, []);
 
     const polygonStrokeColor = useCallback(
@@ -186,11 +370,17 @@ export default function JourneyGlobe({
             const polygon = d as GlobePolygon;
             const key = polygon.properties.__key;
             const isActive = key === selectedKey || key === hoveredKey;
+            const parity = polygon.properties.__hashParity;
 
             if (polygon.properties.__visited) {
-                return isActive
-                    ? "rgba(0, 255, 65, 0.8)"
-                    : "rgba(0, 255, 65, 0.4)";
+                // Brighter strokes for visited regions, even brighter for active
+                if (isActive) {
+                    return "rgba(0, 255, 65, 1)";
+                }
+                // Alternate stroke brightness based on parity
+                return parity
+                    ? "rgba(0, 255, 65, 0.7)"
+                    : "rgba(100, 255, 150, 0.6)";
             }
             return "rgba(0, 255, 65, 0.1)";
         },
@@ -202,9 +392,14 @@ export default function JourneyGlobe({
             const polygon = d as GlobePolygon;
             const key = polygon.properties.__key;
             const isActive = key === selectedKey || key === hoveredKey;
+            const parity = polygon.properties.__hashParity;
 
             if (polygon.properties.__visited) {
-                return isActive ? 0.03 : 0.015;
+                if (isActive) {
+                    return 0.04;
+                }
+                // Slight altitude variation based on parity
+                return parity ? 0.018 : 0.012;
             }
             return 0.002;
         },
@@ -228,8 +423,8 @@ export default function JourneyGlobe({
     }
 
     return (
-        <div ref={containerRef} className="globe-container w-full h-full">
-            {dimensions.width > 0 && dimensions.height > 0 && (
+        <div ref={containerRef} className="globe-container w-full h-full relative">
+            {dimensions.width > 0 && dimensions.height > 0 ? (
                 <Globe
                     ref={globeRef}
                     width={dimensions.width}
@@ -239,6 +434,7 @@ export default function JourneyGlobe({
                     showAtmosphere={true}
                     atmosphereColor="rgba(0, 255, 65, 0.3)"
                     atmosphereAltitude={0.15}
+                    onGlobeReady={handleGlobeReady}
                     // Polygons (countries and states)
                     polygonsData={polygons}
                     polygonCapColor={polygonCapColor}
@@ -270,6 +466,96 @@ export default function JourneyGlobe({
                     ringRepeatPeriod={(d: object) => (d as RingData).repeatPeriod}
                     ringColor={(d: object) => () => (d as RingData).color}
                 />
+            ) : (
+                <div className="flex items-center justify-center h-full text-matrix-green-400">
+                    Waiting for dimensions... ({dimensions.width}x{dimensions.height})
+                </div>
+            )}
+
+            {/* GPS Locate Button - Top Right */}
+            <button
+                onClick={handleLocateMe}
+                className="absolute top-4 right-4 w-10 h-10 rounded-full bg-matrix-darker/80 backdrop-blur-sm border border-matrix-green-400/40 flex items-center justify-center text-matrix-green-400 hover:bg-matrix-green-400/20 hover:border-matrix-green-400/60 transition-all shadow-glow z-20"
+                title="Find nearest location"
+                aria-label="Find nearest location"
+            >
+                <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <circle cx="12" cy="12" r="3" strokeWidth={2} />
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 2v4m0 12v4m10-10h-4M6 12H2"
+                    />
+                </svg>
+            </button>
+
+            {/* Carousel Navigation */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3 z-20">
+                {/* Previous Button */}
+                <button
+                    onClick={handlePrevious}
+                    className="w-10 h-10 rounded-full bg-matrix-darker/80 backdrop-blur-sm border border-matrix-green-400/40 flex items-center justify-center text-matrix-green-400 hover:bg-matrix-green-400/20 hover:border-matrix-green-400/60 transition-all"
+                    title="Previous place"
+                    aria-label="Previous place"
+                >
+                    <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15 19l-7-7 7-7"
+                        />
+                    </svg>
+                </button>
+
+                {/* Place indicator */}
+                <div className="px-3 py-1.5 rounded-full bg-matrix-darker/80 backdrop-blur-sm border border-matrix-green-400/30 text-matrix-green-400 font-mono text-xs">
+                    {currentIndex >= 0 ? (
+                        <span>{currentIndex + 1} / {orderedPlaces.length}</span>
+                    ) : (
+                        <span>- / {orderedPlaces.length}</span>
+                    )}
+                </div>
+
+                {/* Next Button */}
+                <button
+                    onClick={handleNext}
+                    className="w-10 h-10 rounded-full bg-matrix-darker/80 backdrop-blur-sm border border-matrix-green-400/40 flex items-center justify-center text-matrix-green-400 hover:bg-matrix-green-400/20 hover:border-matrix-green-400/60 transition-all"
+                    title="Next place"
+                    aria-label="Next place"
+                >
+                    <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 5l7 7-7 7"
+                        />
+                    </svg>
+                </button>
+            </div>
+
+            {/* Toast notification */}
+            {toastMessage && (
+                <div className="absolute top-16 right-4 px-4 py-2 rounded-lg bg-matrix-darker/90 backdrop-blur-sm border border-matrix-green-400/30 text-matrix-green-400 font-mono text-xs animate-fade-in-up z-30">
+                    {toastMessage}
+                </div>
             )}
 
             {/* Gradient overlay for atmosphere effect */}

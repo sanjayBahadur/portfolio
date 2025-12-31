@@ -44,6 +44,7 @@ declare module "react-globe.gl" {
         showAtmosphere?: boolean;
         atmosphereColor?: string;
         atmosphereAltitude?: number;
+        onGlobeReady?: () => void;
 
         // Polygons
         polygonsData?: object[];

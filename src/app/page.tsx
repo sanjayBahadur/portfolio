@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo } from "react";
 import dynamic from "next/dynamic";
-import { findPlaceByKey } from "@/data/journey";
+import { findPlaceByKey, places } from "@/data/journey";
 import PlaceCard from "@/components/PlaceCard";
 import AboutSection from "@/components/AboutSection";
 import ProjectsSection from "@/components/ProjectsSection";
@@ -128,6 +128,16 @@ export default function Home() {
                                     place={displayedPlace || null}
                                     isLocked={!!selectedKey}
                                     onClear={handleClear}
+                                    onNext={() => {
+                                        const currentIndex = places.findIndex(p => p.key === (selectedKey || places[0].key));
+                                        const nextIndex = (currentIndex + 1) % places.length;
+                                        handleSelect(places[nextIndex].key);
+                                    }}
+                                    onPrev={() => {
+                                        const currentIndex = places.findIndex(p => p.key === (selectedKey || places[0].key));
+                                        const prevIndex = (currentIndex - 1 + places.length) % places.length;
+                                        handleSelect(places[prevIndex].key);
+                                    }}
                                 />
                             </div>
                         </div>

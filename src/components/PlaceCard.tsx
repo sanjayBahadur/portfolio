@@ -7,9 +7,11 @@ interface PlaceCardProps {
     place: Place | null;
     isLocked: boolean;
     onClear: () => void;
+    onNext?: () => void;
+    onPrev?: () => void;
 }
 
-export default function PlaceCard({ place, isLocked, onClear }: PlaceCardProps) {
+export default function PlaceCard({ place, isLocked, onClear, onNext, onPrev }: PlaceCardProps) {
     if (!place) {
         return (
             <div className="terminal-panel p-6 h-full flex flex-col justify-center items-center text-center">
@@ -47,6 +49,28 @@ export default function PlaceCard({ place, isLocked, onClear }: PlaceCardProps) 
             <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
+                        {/* Navigation Arrows */}
+                        <div className="flex items-center gap-1 mr-2">
+                            <button
+                                onClick={(e) => { e.stopPropagation(); onPrev?.(); }}
+                                className="p-1 hover:bg-matrix-green-400/20 rounded-full transition-colors text-matrix-green-400/60 hover:text-matrix-green-400"
+                                aria-label="Previous place"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                </svg>
+                            </button>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); onNext?.(); }}
+                                className="p-1 hover:bg-matrix-green-400/20 rounded-full transition-colors text-matrix-green-400/60 hover:text-matrix-green-400"
+                                aria-label="Next place"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                        </div>
+
                         {isLocked && (
                             <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono bg-matrix-green-400/20 text-matrix-green-400 border border-matrix-green-400/30">
                                 <svg
@@ -54,13 +78,9 @@ export default function PlaceCard({ place, isLocked, onClear }: PlaceCardProps) 
                                     fill="currentColor"
                                     viewBox="0 0 20 20"
                                 >
-                                    <path
-                                        fillRule="evenodd"
-                                        d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-                                        clipRule="evenodd"
-                                    />
+                                    <path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2H7V7a3 3 0 015.905-.75 1 1 0 001.937-.5A5.002 5.002 0 0010 2z" />
                                 </svg>
-                                Locked
+                                Unlocked
                             </span>
                         )}
                         {place.year && (
