@@ -2,7 +2,7 @@
 
 export default function AboutSection() {
     const skills = [
-        { category: "Languages", items: ["TypeScript", "Python", "Rust", "Go"] },
+        { category: "Languages", items: ["TypeScript", "Python", "C#", "Bash", "Rust"] },
         { category: "Frontend", items: ["React", "Next.js", "Three.js", "Tailwind"] },
         { category: "Backend", items: ["Node.js", "FastAPI", "PostgreSQL", "Redis"] },
         { category: "Tools", items: ["Docker", "AWS", "Cloudflare", "Git"] },
@@ -28,22 +28,22 @@ export default function AboutSection() {
                         </h3>
                         <div className="space-y-4 text-matrix-green-100/80">
                             <p>
-                                I am a software engineer passionate about building beautiful,
-                                performant applications that make a difference. With expertise
-                                spanning full-stack development, cloud infrastructure, and 3D
-                                graphics, I love tackling complex problems and turning ideas
-                                into reality.
+                                I’m Sanjay — a full-stack developer with a systems mindset.
+                                I build web applications end-to-end (frontend, APIs, data)
+                                and I enjoy projects where performance, reliability, and
+                                good developer experience matter.
                             </p>
                             <p>
-                                When I am not coding, you will find me exploring new countries,
-                                contributing to open source, or experimenting with the latest
-                                tech. I believe in continuous learning and sharing knowledge
-                                with the community.
+                                My background includes professional .NET development and
+                                hands-on projects across applied AI (local RAG assistants),
+                                interactive visualization, and hardware-adjacent prototyping.
+                                I like making things real: ship a working version, validate it,
+                                then iterate.
                             </p>
                             <p>
-                                Currently focused on AI-powered developer tools and immersive
-                                web experiences. Always open to interesting collaborations and
-                                new adventures.
+                                Currently open to software engineering and AI roles where I can
+                                contribute quickly, learn fast, and build dependable products
+                                with a great team.
                             </p>
                         </div>
                     </div>
@@ -76,10 +76,10 @@ export default function AboutSection() {
                 {/* Stats */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
                     {[
-                        { label: "Years Experience", value: "5+" },
-                        { label: "Projects Completed", value: "50+" },
-                        { label: "Countries Visited", value: "12" },
-                        { label: "Open Source Contributions", value: "200+" },
+                        { label: "Years Experience", value: "2+" },
+                        { label: "Projects Completed", value: "20+" },
+                        { label: "Spoken Languages", value: "4+" },
+                        { label: "Open Source Contributions", value: "300+" },
                     ].map((stat) => (
                         <div
                             key={stat.label}

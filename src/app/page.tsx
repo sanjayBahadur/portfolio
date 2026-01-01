@@ -105,7 +105,7 @@ export default function Home() {
                                 SANJAY MALLA
                             </h1>
                             <p className="text-matrix-green-100/60 text-lg max-w-xl mx-auto">
-                                Explore my journey
+                                Full-stack developer | ML enthusiast
                             </p>
                         </div>
 

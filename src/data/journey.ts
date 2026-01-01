@@ -16,12 +16,13 @@ export const places: Place[] = [
         key: "NPL",
         displayName: "Nepal",
         lat: 28.3949,
-        lng: 84.1240,
-        tags: ["birthplace", "home", "roots", "family"],
+        lng: 84.124,
+        year: 2002,
+        tags: [".NET", "full-stack", "early builder"],
         whatIDid:
-            "Born and raised here. This is where my story started—family, school, curiosity, and the early grind that shaped how I think and work.",
+            "I started coding at 14 and built my first website for a local startup (PL Multimedia). Later, I worked as a .NET developer at CrossOver Nepal for a year.",
         experience:
-            "Nepal is the origin point of everything I am: resilience, ambition, and a deep appreciation for community. It taught me to stay grounded while aiming high.",
+            "This is where I learned consistency and ownership—building things people actually use, and improving them over time.",
     },
     {
         kind: "country",
@@ -29,24 +30,25 @@ export const places: Place[] = [
         displayName: "India",
         lat: 20.5937,
         lng: 78.9629,
-        tags: ["school trips", "pilgrimage", "culture", "family"],
+        year: 2014,
+        tags: ["adaptability", "communication", "perspective"],
         whatIDid:
-            "Visited numerous times for school trips and family events—everything from spiritual journeys to city exploration.",
+            "I visited multiple times through school trips and exchange-style programs, experiencing different regions, traditions, and daily life.",
         experience:
-            "India felt like multiple worlds stitched together: sacred rivers, crowded streets, and endless energy. From rituals with my parents to the cityscapes of New Delhi, every trip left a different imprint.",
+            "It taught me how to stay respectful and flexible in unfamiliar environments—skills that translate directly to teamwork and collaboration.",
     },
     {
         kind: "country",
         key: "THA",
         displayName: "Thailand",
-        lat: 15.8700,
+        lat: 15.87,
         lng: 100.9925,
         year: 2024,
-        tags: ["milestone", "solo travel", "independence", "embassy"],
+        tags: ["independence", "planning", "resilience"],
         whatIDid:
-            "Traveled for my U.S. embassy interview and explored as a solo traveler—my first real independent trip into the world.",
+            "I traveled for my U.S. embassy interview and took my first solo trip, handling planning and logistics end-to-end.",
         experience:
-            "This was a turning point. I learned how to navigate uncertainty alone, plan on the fly, and trust my decisions. It felt like adulthood clicked into place.",
+            "That trip built confidence in calm execution—making good decisions when the situation is new and time matters.",
     },
     {
         kind: "country",
@@ -55,11 +57,11 @@ export const places: Place[] = [
         lat: 51.1657,
         lng: 10.4515,
         year: 2024,
-        tags: ["transit", "connection", "serendipity"],
+        tags: ["initiative", "communication", "networking"],
         whatIDid:
-            "Brief airport transit—ended up making a friend. We grabbed coffee: two strangers, a language barrier, and English as the bridge.",
+            "During an airport transit, I met someone new and we shared coffee—an unexpected conversation across cultures.",
         experience:
-            "A small moment that stuck with me. It reminded me the world is surprisingly warm when you show up with curiosity and zero ego.",
+            "It’s a small reminder I value in engineering too: strong work happens faster when you can connect with people and communicate clearly.",
     },
     {
         kind: "us_state",
@@ -67,12 +69,12 @@ export const places: Place[] = [
         displayName: "Florida",
         lat: 27.6648,
         lng: -81.5158,
-        year: 2024,
-        tags: ["USF", "hackathons", "builders", "momentum"],
+        year: 2025,
+        tags: ["USF", "full-stack", "hackathons"],
         whatIDid:
-            "Currently attending the University of South Florida as a CS grad student—building projects, meeting builders, and chasing hackathon wins.",
+            "I’m a CS grad student at USF. I build projects like AlfredML (local RAG assistant) and an algorithm visualizer. I also won a neurotech hackathon where our team prototyped an EEG-controlled prosthetic (Arduino + WebSockets + 3D print).",
         experience:
-            "Florida is my current arena. Fast growth, constant iteration, and a community that rewards shipping. The hunger is real, and I’m here for it.",
+            "This is my current base—where I’m learning fast, shipping consistently, and getting comfortable building under real deadlines with a team.",
     },
 ];
 
