@@ -8,50 +8,59 @@ export interface Project {
     featured?: boolean;
 }
 
+
 export const projects: Project[] = [
     {
-        id: "globe-portfolio",
-        title: "Interactive Globe Portfolio",
+        id: "alfredml",
+        title: "AlfredML — Local RAG Assistant",
         description:
-            "A stunning 3D globe visualization showcasing my journey around the world. Built with Three.js and React, featuring WebGL rendering, particle effects, and smooth interactions.",
-        tags: ["React", "Three.js", "TypeScript", "WebGL"],
-        github: "https://github.com/username/portfolio",
+            "A privacy-first, local AI assistant that answers questions from your own documents using retrieval-augmented generation. Built to be fast, modular, and easy to extend with new data sources.",
+        tags: ["Python", "RAG", "FastAPI", "Vector DB"],
+        github: "https://github.com/sanjayBahadur/<REPO_NAME>",
         featured: true,
     },
     {
-        id: "ai-assistant",
-        title: "AI Code Assistant",
+        id: "pq-crypto",
+        title: "Post-Quantum Crypto Implementations",
         description:
-            "An intelligent coding assistant powered by large language models. Features context-aware completions, code explanations, and automated refactoring suggestions.",
-        tags: ["Python", "LLM", "FastAPI", "React"],
-        link: "https://example.com/ai-assistant",
-        github: "https://github.com/username/ai-assistant",
+            "Implemented lattice-based cryptography prototypes (Ring/Module-LWE) to explore practical post-quantum security tradeoffs, focusing on correctness, efficiency, and failure modes.",
+        tags: ["Python", "Cryptography", "Lattices", "Research"],
+        github: "https://github.com/sanjayBahadur/pqpake-artifact.git",
         featured: true,
     },
     {
-        id: "realtime-collab",
-        title: "Real-time Collaboration Platform",
+        id: "wifi-csi-sensing",
+        title: "WiFi CSI Sensing Experiments",
         description:
-            "A multiplayer document editing platform with real-time sync, presence indicators, and conflict resolution. Supporting markdown, code, and rich text.",
-        tags: ["Next.js", "WebSocket", "CRDT", "PostgreSQL"],
-        link: "https://example.com/collab",
+            "A WiFi CSI sensing pipeline exploring gesture/activity signals using commodity hardware. Includes preprocessing, clutter removal, feature extraction, and early classifier experiments.",
+        tags: ["Python", "Signal Processing", "ML", "CSI"],
+        link: "https://drive.google.com/drive/folders/130I1bUWCDOGgsvJGBkN-g8391mHReyyh?usp=drive_link",
         featured: true,
     },
     {
-        id: "design-system",
-        title: "Matrix Design System",
+        id: "eeg-prosthetic-hackathon",
+        title: "EEG Prosthetic Prototype (Hackathon Winner)",
         description:
-            "A comprehensive design system inspired by cyberpunk aesthetics. Includes 50+ components, dark mode support, and accessibility features.",
-        tags: ["React", "Storybook", "CSS", "Figma"],
-        github: "https://github.com/username/matrix-ds",
+            "Hackathon project: a 3D-printed prosthetic concept controlled via EEG input, using Arduino Uno + WebSockets for real-time control loops and a fast demo-ready prototype.",
+        tags: ["Arduino", "WebSockets", "EMOTIV", "3D Printing"],
+        github: "https://github.com/joshtrinh1102/MindGrip.git",
+        featured: true,
     },
     {
-        id: "cli-toolkit",
-        title: "Developer CLI Toolkit",
+        id: "algorithm-simulator",
+        title: "Algorithm Simulator (Visual Learning Tool)",
         description:
-            "A collection of command-line tools to supercharge developer productivity. Includes project scaffolding, git utilities, and deployment automation.",
-        tags: ["Rust", "CLI", "DevOps"],
-        github: "https://github.com/username/cli-toolkit",
+            "An interactive algorithm visualizer that simulates core data structures and algorithms step-by-step, designed to make complex ideas feel intuitive and testable.",
+        tags: ["TypeScript", "Next.js", "Visualization", "DSA"],
+        github: "https://github.com/sanjayBahadur/<REPO_NAME>",
+    },
+    {
+        id: "plmultimedia-client",
+        title: "PL Multimedia — Client Website",
+        description:
+            "A production website built for a startup client. Focused on clear messaging, responsive UI, and a clean deployment workflow.",
+        tags: ["Client Work", "React", "UI", "Deployment"],
+        link: "https://www.plmultimediaservice.com",
     },
 ];
 
