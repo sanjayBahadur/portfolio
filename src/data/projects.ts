@@ -16,7 +16,7 @@ export const projects: Project[] = [
         description:
             "A privacy-first, local AI assistant that answers questions from your own documents using retrieval-augmented generation. Built to be fast, modular, and easy to extend with new data sources.",
         tags: ["Python", "RAG", "FastAPI", "Vector DB"],
-        github: "https://github.com/sanjayBahadur/<REPO_NAME>",
+        github: "https://github.com/sanjayBahadur/AlfredML",
         featured: true,
     },
     {
